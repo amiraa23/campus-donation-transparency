@@ -1,0 +1,46 @@
+services:
+  chain:
+    image: node:22-alpine
+    container_name: campus-donation-chain
+    working_dir: /app
+    volumes:
+      - ./:/app
+      - hardhat_node_modules:/app/node_modules
+    command: sh -c "npm install && npx hardhat node --hostname 0.0.0.0"
+    ports:
+      - "8545:8545"
+    networks:
+      - campus-net
+
+  deployer:
+    image: node:22-alpine
+    container_name: campus-donation-deployer
+    working_dir: /app
+    volumes:
+      - ./:/app
+      - hardhat_node_modules:/app/node_modules
+    environment:
+      HARDHAT_NETWORK_URL: http://chain:8545
+    command: sh -c "npm install && sleep 10 && npx hardhat run ./scripts/deploy.ts --network localhost"
+    depends_on:
+      - chain
+    networks:
+      - campus-net
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: campus-donation-frontend
+    ports:
+      - "5173:5173"
+    depends_on:
+      - chain
+      - deployer
+    networks:
+      - campus-net
+
+networks:
+  campus-net:
+
+volumes:
+  hardhat_node_modules:
