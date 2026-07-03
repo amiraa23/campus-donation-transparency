@@ -309,30 +309,7 @@ campus-donation-transparency/
 ├── PROJECT_REPORT.md
 └── README.md
 ```
-
----
-
-## Screenshots
-
-### Dashboard Overview
-
-![Dashboard Overview](assets/dashboard.png)
-
-### Campaign Cards and Progress
-
-![Campaigns](assets/campaigns.png)
-
-### Donation and Receipt Flow
-
-![Donation Flow](assets/donation-flow.png)
-
-### Admin Spending Panel
-
-![Admin Panel](assets/admin-panel.png)
-
----
-
-## Demo
+##Demo
 
 The demo shows the main workflow of the application:
 
@@ -414,10 +391,6 @@ npm run dev
 
 Open the app:
 
-```text
-http://localhost:5173/
-```
-
 ---
 
 ## Docker Run Instructions
@@ -446,18 +419,6 @@ Docker Compose runs three services:
 | deployer | Deploys the smart contract and adds sample data |
 | frontend | Runs the React dashboard |
 
-Frontend URL:
-
-```text
-http://localhost:5173/
-```
-
-Local blockchain RPC:
-
-```text
-http://127.0.0.1:8545
-```
-
 ### Stop Docker
 
 ```bash
@@ -472,7 +433,6 @@ To interact with the application, add the Hardhat local network to MetaMask:
 
 ```text
 Network Name: Hardhat Local
-RPC URL: http://127.0.0.1:8545
 Chain ID: 31337
 Currency Symbol: ETH
 ```
@@ -572,4 +532,4 @@ The goal was to demonstrate how blockchain can be used as a transparent and veri
 
 Campus Donation Transparency App demonstrates how blockchain can improve donation transparency in a campus environment.
 
-By combining Solidity, Hardhat, ethers.js, React, MetaMask, and Docker, the project provides a complete blockchain prototype with donation traceability, donor records, spending transparency, campaign progress, milestones, and a clear user interface.<img width="800" height="430" alt="Blockchain_Demo-ezgif com-video-to-gif-converter" src="https://github.com/user-attachments/assets/74586193-d6f7-47c8-a5da-4d011b282d18" />
+By combining Solidity, Hardhat, ethers.js, React, MetaMask, and Docker, the project provides a complete blockchain prototype with donation traceability, donor records, spending transparency, campaign progress, milestones, and a clear user interface.
