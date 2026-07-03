@@ -1,56 +1,56 @@
 # Campus Donation Transparency App
 
-## 1. Project Overview
+A blockchain-based donation transparency dApp for tracking campus donations, donor receipts, spending records, remaining balances, and campaign progress using Solidity, Hardhat, React, ethers.js, MetaMask, and Docker.
 
-Campus Donation Transparency App is a blockchain-based web application designed to improve transparency and trust in campus donation campaigns.
-
-The application allows donors to donate to specific campus causes, such as library renovation, student aid, medical support, and technology support. Every donation and spending record is stored using a Solidity smart contract on a local Hardhat blockchain.
-
-The project includes a React dashboard that displays campaigns, donation progress, milestones, donor receipts, spending records, and remaining balances.
+![Project Demo](assets/demo.gif)
 
 ---
 
-## 2. Problem Statement
+## Overview
 
-Traditional campus donation systems usually depend on centralized records controlled by one organization or administrator. This can create several trust issues:
+**Campus Donation Transparency App** is a blockchain-based web application designed to improve transparency and trust in campus donation campaigns.
 
-- Donors may not clearly know how their money is used.
+The application allows donors to donate to specific campus causes such as library renovation, student aid, medical support, and technology support. Donations and spending records are stored through a Solidity smart contract on a local Hardhat blockchain, allowing users to verify how funds are collected and used.
+
+The system includes a React dashboard that displays campaigns, donation progress, milestones, donor receipt history, admin spending records, platform statistics, and remaining balances.
+
+---
+
+## Problem Statement
+
+Traditional campus donation systems usually depend on centralized records controlled by one organization or administrator. This can create trust issues because donors may not clearly know how their money is used after donation.
+
+Common problems include:
+
+- Donors cannot easily verify how funds are spent.
 - Spending records may not be publicly visible.
-- Donation receipts may be stored privately.
+- Donation receipts may be stored in private systems.
 - Fund allocation may be unclear.
 - Trust depends mainly on the organization instead of verifiable records.
 
-This project solves the problem by using blockchain to make donation and spending records transparent, traceable, and verifiable.
+This project addresses these issues by using blockchain as a transparent record system for donations and fund usage.
 
 ---
 
-## 3. Why Blockchain?
+## Why Blockchain?
 
-Blockchain is suitable for this project because it provides:
+Blockchain is suitable for this project because donation systems require transparency, traceability, and trust.
 
-### Transparency
+In this project, blockchain is used to:
 
-Anyone can view campaigns, total donations, spending records, and remaining balances.
+- Record every donation on-chain.
+- Link each donation to a specific campaign and category.
+- Allow donors to verify their own donation receipts.
+- Record admin spending with a purpose and receipt reference.
+- Show remaining campaign balances.
+- Prevent spending more than the available campaign balance.
+- Make donation and spending records difficult to manipulate after recording.
 
-### Traceability
-
-Each donation is linked to a campaign, category, amount, donor address, and timestamp.
-
-### Trust
-
-Records are stored on-chain and cannot be easily changed after being recorded.
-
-### Donor Verification
-
-Donors can connect their wallet and view their own donation receipt history.
-
-### Access Control
-
-Only the admin wallet can create campaigns and record spending.
+Blockchain is not used only as a payment tool here. It is used as a transparent and auditable record layer for campus donation management.
 
 ---
 
-## 4. Main Features
+## Key Features
 
 ### Campaign Management
 
@@ -64,10 +64,11 @@ The admin can create donation campaigns. Each campaign includes:
 - Total donated amount
 - Total spent amount
 - Active status
+- Creation timestamp
 
 ### Category-Based Donations
 
-Donations are linked to clear campus categories, such as:
+Donations are linked to clear campus categories such as:
 
 - Library
 - Student Aid
@@ -96,42 +97,35 @@ Only the admin can record spending. Each spending record includes:
 - Receipt reference
 - Timestamp
 
-### Campaign Progress Bar
-
-The frontend displays campaign progress based on the donated amount compared to the target amount.
-
-### Donation Milestones
-
-Each campaign shows four milestones:
-
-- 25%
-- 50%
-- 75%
-- 100%
-
-### Donor View
-
-A donor can connect MetaMask and view their donation receipt history.
-
-### Admin Panel
-
-The admin can:
-
-- Create a new campaign
-- Record spending
-- View updated campaign balances
-
 ### Fund Traceability
 
-The project shows the flow of funds:
+The system shows the flow of funds:
 
 ```text
 Donation received → Category allocation → Spending record → Remaining balance
 ```
 
+### Overspending Prevention
+
+The smart contract prevents the admin from recording spending greater than the available campaign balance.
+
+### Donor View
+
+A donor can connect MetaMask and view their personal donation receipt history.
+
+### Admin Panel
+
+The admin can:
+
+- Create a new campaign.
+- Record spending.
+- View updated balances.
+- Track campaign progress.
+- Review spending records.
+
 ---
 
-## 5. Tech Stack
+## Tech Stack
 
 | Layer | Technology |
 |---|---|
@@ -142,10 +136,147 @@ Donation received → Category allocation → Spending record → Remaining bala
 | Wallet | MetaMask |
 | Testing | Mocha + Chai |
 | Containerization | Docker + Docker Compose |
+| Local Blockchain | Hardhat Local Network |
 
 ---
 
-## 6. Project Structure
+## System Architecture
+
+```mermaid
+flowchart LR
+    Donor[Donor Wallet] --> UI[React Frontend Dashboard]
+    Admin[Admin Wallet] --> UI
+
+    UI --> MetaMask[MetaMask]
+    MetaMask --> RPC[Hardhat Local RPC localhost:8545]
+    RPC --> Contract[CampusDonationTransparency Smart Contract]
+
+    Contract --> Campaigns[Campaign Records]
+    Contract --> Donations[Donation Receipts]
+    Contract --> Spending[Spending Records]
+    Contract --> Stats[Progress Milestones Remaining Balance]
+
+    Docker[Docker Compose] --> Chain[Hardhat Node]
+    Docker --> Deployer[Deployer Service]
+    Docker --> Frontend[React Frontend]
+
+    Deployer --> Contract
+    Frontend --> UI
+```
+
+---
+
+## Donation and Spending Lifecycle
+
+```mermaid
+sequenceDiagram
+    autonumber
+
+    actor Admin
+    actor Donor
+    participant UI as React Frontend Dashboard
+    participant ETH as ethers.js
+    participant MM as MetaMask
+    participant RPC as Hardhat Local RPC
+    participant SC as CampusDonationTransparency Smart Contract
+    participant Node as Hardhat Node
+
+    Note over Admin,Node: Phase 1: Campaign Creation
+
+    Admin->>UI: Enter campaign title, description, category, and target amount
+    UI->>ETH: Prepare createCampaign() contract call
+    ETH->>MM: Request transaction signature
+    MM->>Admin: Show confirmation popup
+    Admin->>MM: Confirm transaction
+    MM->>RPC: Send signed transaction
+    RPC->>SC: Execute createCampaign()
+    SC->>SC: Check onlyAdmin permission
+    SC->>SC: Store campaign record
+    SC->>Node: State update mined
+    Node-->>UI: Campaign data becomes available
+
+    Note over Donor,Node: Phase 2: Donation
+
+    Donor->>UI: Enter donation amount and click Donate
+    UI->>ETH: Convert ETH amount to Wei using parseEther()
+    ETH->>MM: Prepare donate(campaignId) payable transaction
+    MM->>Donor: Show transaction confirmation
+    Donor->>MM: Confirm donation
+    MM->>RPC: Send signed donation transaction
+    RPC->>SC: Execute donate()
+    SC->>SC: Validate active campaign and donation amount
+    SC->>SC: Increase totalDonated
+    SC->>SC: Store donation receipt
+    SC->>Node: Donation state update mined
+    Node-->>UI: Updated donated amount, progress, and receipt displayed
+
+    Note over Admin,Node: Phase 3: Spending Record
+
+    Admin->>UI: Enter campaign ID, amount, purpose, and receipt reference
+    UI->>ETH: Prepare recordSpending() contract call
+    ETH->>MM: Request transaction signature
+    MM->>Admin: Show confirmation popup
+    Admin->>MM: Confirm transaction
+    MM->>RPC: Send signed spending transaction
+    RPC->>SC: Execute recordSpending()
+    SC->>SC: Check onlyAdmin permission
+    SC->>SC: Check amount <= remaining balance
+    SC->>SC: Increase totalSpent
+    SC->>SC: Store spending record
+    SC->>Node: Spending state update mined
+    Node-->>UI: Updated spent, remaining balance, and spending records displayed
+```
+
+---
+
+## Smart Contract Summary
+
+The main smart contract is:
+
+```text
+CampusDonationTransparency.sol
+```
+
+The contract manages:
+
+- Campaign creation
+- Donation recording
+- Donor donation history
+- Admin spending records
+- Remaining balance calculation
+- Campaign progress calculation
+- Milestone tracking
+- Platform statistics
+
+Important functions include:
+
+```text
+createCampaign()
+donate()
+recordSpending()
+getAllCampaigns()
+getDonorDonations()
+getCampaignSpendingRecords()
+getCampaignRemainingBalance()
+getCampaignProgress()
+getMilestones()
+getPlatformStats()
+```
+
+---
+
+## Access Control
+
+Only the admin wallet can:
+
+- Create campaigns
+- Record spending
+
+This prevents unauthorized users from modifying financial records or adding spending entries.
+
+---
+
+## Project Structure
 
 ```text
 campus-donation-transparency/
@@ -175,134 +306,53 @@ campus-donation-transparency/
 ├── docker-compose.yml
 ├── hardhat.config.ts
 ├── package.json
+├── PROJECT_REPORT.md
 └── README.md
 ```
 
 ---
 
-## 7. Smart Contract Summary
+## Screenshots
 
-The main smart contract is:
+### Dashboard Overview
 
-```text
-CampusDonationTransparency.sol
-```
+![Dashboard Overview](assets/dashboard.png)
 
-The contract handles:
+### Campaign Cards and Progress
 
-- Campaign creation
-- Donation recording
-- Donor donation history
-- Admin spending records
-- Remaining balance calculation
-- Campaign progress calculation
-- Milestone tracking
-- Platform statistics
+![Campaigns](assets/campaigns.png)
 
-Important functions:
+### Donation and Receipt Flow
 
-```text
-createCampaign()
-donate()
-recordSpending()
-getAllCampaigns()
-getDonorDonations()
-getCampaignSpendingRecords()
-getCampaignRemainingBalance()
-getCampaignProgress()
-getMilestones()
-getPlatformStats()
-```
+![Donation Flow](assets/donation-flow.png)
+
+### Admin Spending Panel
+
+![Admin Panel](assets/admin-panel.png)
 
 ---
 
-## 8. Donation and Spending Lifecycle
+## Demo
 
-The lifecycle below explains how the main actions move through the system: campaign creation, donation, and spending recording.
+The demo shows the main workflow of the application:
 
-```mermaid
-sequenceDiagram
-    autonumber
+1. Opening the dashboard.
+2. Viewing campaign statistics.
+3. Connecting MetaMask.
+4. Creating a campaign as admin.
+5. Donating to a campaign.
+6. Viewing donor receipt history.
+7. Recording spending.
+8. Viewing updated remaining balance and spending records.
 
-    actor Admin
-    actor Donor
-    participant UI as React Frontend Dashboard
-    participant ETH as ethers.js
-    participant MM as MetaMask
-    participant RPC as Hardhat Local RPC
-    participant SC as CampusDonationTransparency Smart Contract
-    participant Node as Hardhat Node / Blockchain
+![Demo Video]<img width="800" height="430" alt="Blockchain_Demo-ezgif com-video-to-gif-converter" src="https://github.com/user-attachments/assets/850cb942-6eeb-4e04-b1cd-82119f5a73f3" />
 
-    Note over Admin,Node: Phase 1: Campaign Creation
-
-    Admin->>UI: Enter campaign title, description, category, target amount
-    UI->>ETH: Prepare createCampaign() contract call
-    ETH->>MM: Request transaction signature
-    MM->>Admin: Show confirmation popup
-    Admin->>MM: Confirm transaction
-    MM->>RPC: Send signed transaction
-    RPC->>SC: Execute createCampaign()
-    SC->>SC: Check onlyAdmin permission
-    SC->>SC: Store campaign record
-    SC->>Node: State update mined
-    Node-->>UI: Campaign data becomes available after refresh
-
-    Note over Donor,Node: Phase 2: Donation
-
-    Donor->>UI: Enter donation amount and click Donate
-    UI->>ETH: Convert ETH amount to Wei using parseEther()
-    ETH->>MM: Prepare donate(campaignId) payable transaction
-    MM->>Donor: Show transaction confirmation
-    Donor->>MM: Confirm donation
-    MM->>RPC: Send signed donation transaction
-    RPC->>SC: Execute donate()
-    SC->>SC: Validate active campaign and donation amount
-    SC->>SC: Increase totalDonated
-    SC->>SC: Store donation receipt
-    SC->>Node: Donation state update mined
-    Node-->>UI: Updated donated amount, progress, and donor receipt displayed
-
-    Note over Admin,Node: Phase 3: Spending Record
-
-    Admin->>UI: Enter campaign ID, amount, purpose, receipt reference
-    UI->>ETH: Prepare recordSpending() contract call
-    ETH->>MM: Request transaction signature
-    MM->>Admin: Show confirmation popup
-    Admin->>MM: Confirm transaction
-    MM->>RPC: Send signed spending transaction
-    RPC->>SC: Execute recordSpending()
-    SC->>SC: Check onlyAdmin permission
-    SC->>SC: Check amount <= remaining balance
-    SC->>SC: Increase totalSpent
-    SC->>SC: Store spending record
-    SC->>Node: Spending state update mined
-    Node-->>UI: Updated spent, remaining balance, and spending records displayed
-```
-
-### Lifecycle Explanation
-
-The lifecycle starts from a user action on the React dashboard. The frontend uses ethers.js to prepare the smart contract call. If the action changes blockchain data, MetaMask asks the user to confirm and sign the transaction.
-
-After confirmation, the signed transaction is sent to the Hardhat local blockchain through the RPC endpoint. The smart contract then validates the request and updates the blockchain state.
-
-The lifecycle has three main phases:
-
-1. **Campaign Creation:**  
-   The admin creates a campaign. The smart contract checks that the caller is the admin, then stores the campaign record.
-
-2. **Donation:**  
-   The donor enters a donation amount. ethers.js converts the ETH amount to Wei, MetaMask confirms the transaction, and the smart contract stores the donation receipt.
-
-3. **Spending Record:**  
-   The admin records spending. The smart contract checks that the caller is the admin and prevents overspending by making sure the spending amount does not exceed the remaining campaign balance.
-
-This lifecycle shows how the system achieves fund traceability from campaign creation to donation receipt and spending transparency.
 
 ---
 
-## 9. Manual Run Instructions
+## Manual Run Instructions
 
-### Step 1: Install dependencies
+### 1. Install dependencies
 
 From the project root:
 
@@ -310,13 +360,13 @@ From the project root:
 npm install
 ```
 
-### Step 2: Compile smart contracts
+### 2. Compile smart contracts
 
 ```bash
 npx hardhat compile
 ```
 
-### Step 3: Run tests
+### 3. Run tests
 
 ```bash
 npx hardhat test
@@ -328,7 +378,7 @@ Expected result:
 9 passing
 ```
 
-### Step 4: Start local Hardhat blockchain
+### 4. Start local Hardhat blockchain
 
 Open a terminal from the project root and run:
 
@@ -338,12 +388,12 @@ npx hardhat node
 
 Keep this terminal running.
 
-### Step 5: Deploy the smart contract
+### 5. Deploy the smart contract
 
 Open another terminal from the project root and run:
 
 ```bash
-npx hardhat run .\scripts\deploy.ts --network localhost
+npx hardhat run ./scripts/deploy.ts --network localhost
 ```
 
 Expected result:
@@ -352,7 +402,7 @@ Expected result:
 Deployment completed successfully!
 ```
 
-### Step 6: Run the frontend
+### 6. Run the frontend
 
 Open another terminal:
 
@@ -370,7 +420,7 @@ http://localhost:5173/
 
 ---
 
-## 10. Docker Run Instructions
+## Docker Run Instructions
 
 The project supports Docker Compose.
 
@@ -416,7 +466,7 @@ docker compose down
 
 ---
 
-## 11. MetaMask Setup
+## MetaMask Setup
 
 To interact with the application, add the Hardhat local network to MetaMask:
 
@@ -427,23 +477,17 @@ Chain ID: 31337
 Currency Symbol: ETH
 ```
 
-Import the Hardhat local admin account using this private key:
+Use one of the local Hardhat test accounts printed in the terminal after running:
 
-```text
-0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
+```bash
+npx hardhat node
 ```
 
-Admin address:
-
-```text
-0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266
-```
-
-Important note: this private key is only for local Hardhat testing and must never be used on a real blockchain network.
+> Important: Hardhat accounts are for local testing only. Never use local testing private keys on a real blockchain network.
 
 ---
 
-## 12. Testing Summary
+## Testing Summary
 
 The project includes automated tests for:
 
@@ -471,75 +515,61 @@ Expected output:
 
 ---
 
-## 13. Demo Flow
+## Limitations
 
-A recommended demo flow:
+This project is a local academic prototype and has some limitations:
 
-1. Start the Hardhat local blockchain.
-2. Deploy the smart contract.
-3. Open the React dashboard.
-4. Show the existing campaigns.
-5. Connect MetaMask.
-6. Create a new campaign as admin.
-7. Donate to the campaign.
-8. Show the donor receipt history.
-9. Record spending as admin.
-10. Show updated donated, spent, and remaining balances.
-11. Explain how the spending record improves transparency.
-
----
-
-## 14. Trust and Transparency Reasoning
-
-This project improves donation trust because every important financial action is recorded on-chain.
-
-The donor can verify:
-
-- Which campaign received the donation
-- How much was donated
-- Which category the donation belongs to
-- How much was spent
-- Why the money was spent
-- What balance remains
-
-The admin cannot record spending beyond the available campaign balance. Also, only the admin wallet can create campaigns or record spending.
-
-This makes the donation process more transparent and easier to audit.
-
----
-
-## 15. Limitations
-
-This project is a local prototype. It currently runs on a local Hardhat blockchain and does not use real money.
-
-Current limitations:
-
-- It does not include real payment processing.
+- It runs on a local Hardhat blockchain.
+- It does not use real money.
+- It is not deployed to a public testnet.
 - It does not store uploaded receipt images.
-- It does not include user authentication beyond wallet connection.
-- It does not deploy to a public testnet.
-- It uses local sample ETH only.
+- It does not include advanced user authentication beyond wallet connection.
+- It does not include real payment processing.
+- It does not include advanced analytics charts.
 
 ---
 
-## 16. Future Improvements
+## Future Improvements
 
 Possible future improvements include:
 
-- Deploying to a public Ethereum testnet
-- Adding IPFS receipt file storage
-- Adding real campaign images
-- Adding role-based admin management
-- Adding campaign closing logic
-- Adding refund logic
-- Adding a public audit report page
-- Adding donation and spending charts
-- Adding notifications for campaign milestones
+- Deploying the project to a public Ethereum testnet.
+- Adding IPFS storage for receipt images.
+- Adding campaign images.
+- Adding role-based admin management.
+- Adding campaign closing logic.
+- Adding refund logic.
+- Adding donation and spending analytics charts.
+- Adding public audit reports.
+- Adding notifications when milestones are reached.
 
 ---
 
-## 17. Conclusion
+## What I Learned
+
+Through this project, I practiced:
+
+- Designing Solidity smart contracts
+- Implementing access control in smart contracts
+- Preventing overspending through contract validation
+- Connecting React applications to blockchain using ethers.js
+- Using MetaMask for wallet-based interaction
+- Testing smart contracts with Hardhat, Mocha, and Chai
+- Using Docker Compose to run a multi-service local blockchain application
+- Thinking about transparency, traceability, and trust in decentralized applications
+
+---
+
+## Academic Context
+
+This project was developed as part of the **Blockchain & Distributed Systems** coursework.
+
+The goal was to demonstrate how blockchain can be used as a transparent and verifiable record system for donation tracking and fund usage.
+
+---
+
+## Conclusion
 
 Campus Donation Transparency App demonstrates how blockchain can improve donation transparency in a campus environment.
 
-By combining Solidity, Hardhat, ethers.js, React, MetaMask, and Docker, the project provides a complete blockchain prototype with donation traceability, donor records, spending transparency, campaign progress, milestones, and a clear user interface.
+By combining Solidity, Hardhat, ethers.js, React, MetaMask, and Docker, the project provides a complete blockchain prototype with donation traceability, donor records, spending transparency, campaign progress, milestones, and a clear user interface.<img width="800" height="430" alt="Blockchain_Demo-ezgif com-video-to-gif-converter" src="https://github.com/user-attachments/assets/74586193-d6f7-47c8-a5da-4d011b282d18" />
